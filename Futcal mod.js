@@ -2,10 +2,16 @@
 // These must be at the very top of the file. Do not edit.
 // icon-color: deep-green; icon-glyph: futbol;
 
+//     teamId: "8152",
+//     timeZone: "Europe/Berlin",
+// search for Color.gray
+// replace with Color.white
+
+
 // Widget customisation
 const defaultSettings = {
-    teamId: "9768",
-    timeZone: "Europe/London",
+    teamId: "8152",
+    timeZone: "Europe/Berlin",
 
     language: "system",
 
@@ -44,6 +50,12 @@ const defaultSettings = {
         dark: "#ff453a"
     }
 };
+
+// Call no-backround.js
+const RESET_BACKGROUND = !config.runsInWidget
+const { transparent } = importModule('no-background')
+const widget = new ListWidget()
+widget.backgroundImage = await transparent(Script.name(), RESET_BACKGROUND)
 
 // Create folder to store data
 let fm = FileManager.local();
@@ -111,9 +123,9 @@ if (config.runsInWidget) {
 
 // Create widget UI
 async function createWidget() {
-    let widget = new ListWidget();
+//    let widget = new ListWidget();
     widget.backgroundColor = Color.dynamic(new Color(userSettings.backgroundColor.light), new Color(userSettings.backgroundColor.dark));
-    setWidgetBackground(widget);
+//    setWidgetBackground(widget);
 
     let showMatchesView = true;
     let showTableView = true;
@@ -155,7 +167,7 @@ async function createWidget() {
     } else {
         const offlineError = dictionary.noInternetConnection;
         const errorStack = widget.addStack();
-        addFormattedText(errorStack, offlineError, Font.regularSystemFont(14), Color.gray(), null, true);
+        addFormattedText(errorStack, offlineError, Font.regularSystemFont(14), Color.white(), null, true);
     }
     return widget;
 }
@@ -170,9 +182,9 @@ async function addWidgetMatches(globalStack) {
           if (teamData.fixtures[i].id === nextMatch.id) {
               previousMatchIndex = i - 1;
               break;
-          }
+           }
+        }
       }
-    }
     const previousMatch = teamData.fixtures[previousMatchIndex];
 
     const matchesStack = globalStack.addStack();
@@ -185,7 +197,7 @@ async function addWidgetMatches(globalStack) {
     const matchesSeparatorStack = matchesStack.addStack();
     matchesSeparatorStack.addSpacer(2);
     const separatorValue = (dictionary.matchTitleNext).toUpperCase();
-    addFormattedText(matchesSeparatorStack, separatorValue, Font.semiboldSystemFont(11), Color.gray(), 1, false);
+    addFormattedText(matchesSeparatorStack, separatorValue, Font.semiboldSystemFont(11), Color.white(), 1, false);
     matchesStack.addSpacer(3);
     await addWidgetMatch(matchesStack, nextMatch, "Next");
 }
@@ -203,7 +215,7 @@ async function addWidgetMatch(matchesStack, match, title) {
         const matchDetailsOffline = `match${title}.json`;
         const matchDetails = await getData(matchDetailsUrl, matchDetailsOffline);
 
-        let resultColor = Color.gray();
+        let resultColor = Color.white();
         if (matchDetails.header.status.started) {
             if (match.home.score == match.away.score) {
                 resultColor = Color.yellow();
@@ -293,24 +305,24 @@ async function addWidgetMatch(matchesStack, match, title) {
             if (matchDetails.header.status.cancelled) {
                 // If match is cancelled show reason
                 const detailsCancellationValue = replaceText(matchDetails.header.status.reason.long);
-                addFormattedText(matchInfoDetailsStack, detailsCancellationValue, Font.regularSystemFont(12), Color.gray(), null, false);
+                addFormattedText(matchInfoDetailsStack, detailsCancellationValue, Font.regularSystemFont(12), Color.white(), null, false);
             } else {
                 // If match is in the future show date and time
                 const detailsDateValue = formatDate(new Date((matchDetails.content.matchFacts.infoBox["Match Date"].dateFormatted).replaceAll(".", "")));
-                addFormattedText(matchInfoDetailsStack, detailsDateValue, Font.regularSystemFont(12), Color.gray(), null, false);
+                addFormattedText(matchInfoDetailsStack, detailsDateValue, Font.regularSystemFont(12), Color.white(), null, false);
                 matchInfoDetailsStack.addSpacer(3);
                 const detailsTimeValue = formatTime(new Date((`${matchDetails.content.matchFacts.infoBox["Match Date"].dateFormatted} ${matchDetails.content.matchFacts.infoBox["Match Date"].timeFormatted}`).replaceAll(".", "")));
-                addFormattedText(matchInfoDetailsStack, detailsTimeValue, Font.regularSystemFont(12), Color.gray(), null, false);
+                addFormattedText(matchInfoDetailsStack, detailsTimeValue, Font.regularSystemFont(12), Color.white(), null, false);
             }
         } else {
             // If match is in the past or ongoing show result
             const detailsScoreValue = matchDetails.header.status.scoreStr;
-            addFormattedText(matchInfoDetailsStack, detailsScoreValue, Font.regularSystemFont(12), Color.gray(), null, false);
+            addFormattedText(matchInfoDetailsStack, detailsScoreValue, Font.regularSystemFont(12), Color.white(), null, false);
             matchInfoDetailsStack.addSpacer(3);
             if (matchDetails.header.status.started && !matchDetails.header.status.finished) {
                 if (userSettings.showMatchesLiveTime) {
                     const detailsPlayingTimeValue = `(${replaceText(matchDetails.header.status.liveTime.short)})`;
-                    addFormattedText(matchInfoDetailsStack, detailsPlayingTimeValue, Font.regularSystemFont(12), Color.gray(), null, false);
+                    addFormattedText(matchInfoDetailsStack, detailsPlayingTimeValue, Font.regularSystemFont(12), Color.white(), null, false);
                     matchInfoDetailsStack.addSpacer(3);
                 }
                 const detailsLiveValue = "●";
@@ -611,11 +623,20 @@ function isTomorrow(date) {
 }
 
 // Look for backgroundImage in folder and if available use it as background
+/* # make use of module no-background #
 function setWidgetBackground(widget) {
     const backgroundImage = "background.png";
     const imageUrl = fm.joinPath(offlinePath, backgroundImage);
     widget.backgroundImage = Image.fromFile(imageUrl);
 }
+*/
+/*function setWidgetBackground(widget) {
+	const RESET_BACKGROUND = !config.runsInWidget;
+	const { transparent } = importModule('no-background');
+//	const widget = new ListWidget();
+	widget.backgroundImage = await transparent(Script.name(), 
+}*/
+
 
 // Prepare league and round name to fit in widget
 function shortenRoundName(roundName) {
