@@ -30,29 +30,35 @@ const defaultSettings = {
     showRowPositionHighlight: false,
 
     backgroundColor: {
-        light: "#ffffff",
+        //light: "#ffffff",
+        light: "#1c1c1e",
         dark: "#1c1c1e"
     },
     leagueTitleColor: {
-        light: "#ff3b30",
+        //light: "#ff3b30",
+        light: "#ff453a",
         dark: "#ff453a"
     },
     highlightedPositionColor: {
-        light: "#ff3b30",
+        //light: "#ff3b30",
+        light: "#ff453a",
         dark: "#ff453a"
     },
     highlightedRowColor: {
-        light: "#e5e6ea",
+        //light: "#e5e6ea",
+        light: "#3a3a3c",
         dark: "#3a3a3c"
     },
     liveColor: {
-        light: "#ff3b30",
+        //light: "#ff3b30",
+        light: "#ff453a",
         dark: "#ff453a"
     }
 };
 
 // Call no-backround.js
-const RESET_BACKGROUND = !config.runsInWidget
+const RESET_BACKGROUND = false
+// const RESET_BACKGROUND = !config.runsInWidget
 const { transparent } = importModule('no-background')
 const widget = new ListWidget()
 widget.backgroundImage = await transparent(Script.name(), RESET_BACKGROUND)
@@ -61,7 +67,7 @@ widget.backgroundImage = await transparent(Script.name(), RESET_BACKGROUND)
 let fm = FileManager.local();
 const iCloudUsed = fm.isFileStoredIniCloud(module.filename);
 fm = iCloudUsed ? FileManager.iCloud() : fm;
-const widgetFolder = "Futcal";
+const widgetFolder = "Futcal_mod";
 const offlinePath = fm.joinPath(fm.documentsDirectory(), widgetFolder);
 if (!fm.fileExists(offlinePath)) fm.createDirectory(offlinePath);
 
@@ -93,7 +99,7 @@ const dictionary = getDictionary(language)[1];
 
 // Define FotMob API URLs
 const baseApiUrl = encodeURI("https://www.fotmob.com");
-const teamDataApiUrl = encodeURI(`${baseApiUrl}/api/teams?id=${userSettings.teamId}&tab=overview&type=team&timeZone=${userSettings.timeZone}`);
+const teamDataApiUrl = encodeURI(`${baseApiUrl}/api/teams?id=${userSettings.teamId}&tab=overview&type=team&timezone=${userSettings.timeZone}`);
 const matchDetailsApiUrl = encodeURI(`${baseApiUrl}/api/matchDetails?matchId=`);
 
 // Get team data
@@ -174,18 +180,17 @@ async function createWidget() {
 
 // Create matches view
 async function addWidgetMatches(globalStack) {
-    const nextMatch = teamData.nextMatch;
-
-    let previousMatchIndex = teamData.fixtures.length - 1;
+    const nextMatch = teamData.fixtures.allFixtures.nextMatch;
+    let previousMatchIndex = teamData.fixtures.allFixtures.fixtures.length - 1;
     if (nextMatch) {
-      for (let i = 0; i < teamData.fixtures.length; i += 1) {
-          if (teamData.fixtures[i].id === nextMatch.id) {
+      for (let i = 0; i < teamData.fixtures.allFixtures.fixtures.length; i += 1) {
+          if (teamData.fixtures.allFixtures.fixtures[i].id === nextMatch.id) {
               previousMatchIndex = i - 1;
               break;
            }
         }
       }
-    const previousMatch = teamData.fixtures[previousMatchIndex];
+    const previousMatch = teamData.fixtures.allFixtures.fixtures[previousMatchIndex];
 
     const matchesStack = globalStack.addStack();
     matchesStack.url = teamMatchesTapUrl;
@@ -211,7 +216,7 @@ async function addWidgetMatch(matchesStack, match, title) {
     if (match != undefined) {
         const matchTapUrl = encodeURI(`${baseApiUrl}${match.pageUrl}`);
         matchStack.url = matchTapUrl;
-        const matchDetailsUrl = `${matchDetailsApiUrl}${match.id}`;
+        const matchDetailsUrl = `${matchDetailsApiUrl}${match.id}&timezone=${userSettings.timeZone}`;
         const matchDetailsOffline = `match${title}.json`;
         const matchDetails = await getData(matchDetailsUrl, matchDetailsOffline);
 
@@ -237,11 +242,11 @@ async function addWidgetMatch(matchesStack, match, title) {
         const matchInfoCompetitionStack = matchInfoStack.addStack();
         matchInfoCompetitionStack.centerAlignContent();
         const competitionNameValue = replaceText(matchDetails.content.matchFacts.infoBox.Tournament.leagueName);
-        addFormattedText(matchInfoCompetitionStack, competitionNameValue, Font.semiboldSystemFont(13), null, 1, false);
+        addFormattedText(matchInfoCompetitionStack, competitionNameValue, Font.semiboldSystemFont(13), Color.white(), null, 1, false);
         if (userSettings.showMatchesRound && matchDetails.content.matchFacts.infoBox.Tournament.round) {
             matchInfoCompetitionStack.addSpacer(2);
             const competitionRoundValue = `(${shortenRoundName(matchDetails.content.matchFacts.infoBox.Tournament.round)})`;
-            addFormattedText(matchInfoCompetitionStack, competitionRoundValue, Font.semiboldSystemFont(13), null, 1, false);
+            addFormattedText(matchInfoCompetitionStack, competitionRoundValue, Font.semiboldSystemFont(13), Color.white(), null, 1, false);
         }
         matchInfoStack.addSpacer(1);
 
@@ -259,17 +264,17 @@ async function addWidgetMatch(matchesStack, match, title) {
             }
             if (userSettings.showMatchesTeamsNames) {
                 const oppositionTeamValue = match.home.id == teamData.details.id ? replaceText(match.away.name) : replaceText(match.home.name);
-                addFormattedText(matchInfoTeamsStack, oppositionTeamValue, Font.regularSystemFont(12), null, 1, false);
+                addFormattedText(matchInfoTeamsStack, oppositionTeamValue, Font.regularSystemFont(12), Color.white(), null, 1, false);
                 matchInfoTeamsStack.addSpacer(2);
             }
             if (userSettings.showHomeOrAway) {
                 const homeOrAwayValue = match.home.id == teamData.details.id ? `(${dictionary.home})` : `(${dictionary.away})`;
-                addFormattedText(matchInfoTeamsStack, homeOrAwayValue, Font.regularSystemFont(12), null, null, false);
+                addFormattedText(matchInfoTeamsStack, homeOrAwayValue, Font.regularSystemFont(12), Color.white(), null, null, false);
             }
         } else {
             if (userSettings.showMatchesTeamsNames) {
                 const teamsHomeValue = replaceText(match.home.name);
-                addFormattedText(matchInfoTeamsStack, teamsHomeValue, Font.regularSystemFont(12), null, 1, false);
+                addFormattedText(matchInfoTeamsStack, teamsHomeValue, Font.regularSystemFont(12), Color.white(), null, 1, false);
                 matchInfoTeamsStack.addSpacer(2);
             }
             if (userSettings.showMatchesTeamsBadges) {
@@ -281,7 +286,7 @@ async function addWidgetMatch(matchesStack, match, title) {
                 matchInfoTeamsStack.addSpacer(2);
             }
             const teamsSeparatorValue = "-";
-            addFormattedText(matchInfoTeamsStack, teamsSeparatorValue, Font.regularSystemFont(12), null, null, false);
+            addFormattedText(matchInfoTeamsStack, teamsSeparatorValue, Font.regularSystemFont(12), Color.white(), null, null, false);
             if (userSettings.showMatchesTeamsBadges) {
                 matchInfoTeamsStack.addSpacer(2);
                 let teamBadgeUrl = encodeURI(`https://images.fotmob.com/image_resources/logo/teamlogo/${match.away.id}_xsmall.png`);
@@ -293,7 +298,7 @@ async function addWidgetMatch(matchesStack, match, title) {
             if (userSettings.showMatchesTeamsNames) {
                 matchInfoTeamsStack.addSpacer(2);
                 const teamsAwayValue = replaceText(match.away.name);
-                addFormattedText(matchInfoTeamsStack, teamsAwayValue, Font.regularSystemFont(12), null, 1, false);
+                addFormattedText(matchInfoTeamsStack, teamsAwayValue, Font.regularSystemFont(12), Color.white(), null, 1, false);
             }
         }
         matchInfoStack.addSpacer(1);
@@ -335,11 +340,11 @@ async function addWidgetMatch(matchesStack, match, title) {
         const matchInfoDetailsStack = matchInfoStack.addStack();
         matchInfoDetailsStack.centerAlignContent();
         const noMatchesValue = dictionary.noDataAvailable;
-        addFormattedText(matchInfoDetailsStack, noMatchesValue, Font.regularSystemFont(12), null, 1, false);
+        addFormattedText(matchInfoDetailsStack, noMatchesValue, Font.regularSystemFont(12), Color.white(), null, 1, false);
         matchInfoStack.addSpacer(1);
-        addFormattedText(matchInfoStack, "", Font.semiboldSystemFont(13), null, null, false);
+        addFormattedText(matchInfoStack, "", Font.semiboldSystemFont(13), Color.white(), null, null, false);
         matchInfoStack.addSpacer(1);
-        addFormattedText(matchInfoStack, "", Font.regularSystemFont(12), null, null, false);
+        addFormattedText(matchInfoStack, "", Font.regularSystemFont(12), Color.white(), null, null, false);
     }
 }
 
@@ -413,7 +418,7 @@ async function addWidgetTable(stack) {
                     cellDataStack.addImage(highlightedPositionImage);
                 } else {
                     let cellDataValue = `${table[i][j]}`;
-                    addFormattedText(cellDataStack, cellDataValue, Font.semiboldSystemFont(10), null, null, true);
+                    addFormattedText(cellDataStack, cellDataValue, Font.semiboldSystemFont(10), Color.white(), null, null, true);
                 }
             } else if (j == 1 && i > 0) {
                 let teamBadgeUrl = encodeURI(`https://images.fotmob.com/image_resources/logo/teamlogo/${table[i][j]}_xsmall.png`);
@@ -423,7 +428,7 @@ async function addWidgetTable(stack) {
                 teamBadgeImage.imageSize = new Size(14, 14);
             } else {
                 let cellDataValue = `${table[i][j]}`;
-                addFormattedText(cellDataStack, cellDataValue, Font.semiboldSystemFont(10), null, null, true);
+                addFormattedText(cellDataStack, cellDataValue, Font.semiboldSystemFont(10), Color.white(), null, null, true);
             }
         }
     }
@@ -432,7 +437,7 @@ async function addWidgetTable(stack) {
       const noDataStack = leagueStack.addStack();
       noDataStack.addSpacer();
       const noMatchesValue = dictionary.noDataAvailable;
-      addFormattedText(noDataStack, noMatchesValue, Font.regularSystemFont(12), null, 1, false);
+      addFormattedText(noDataStack, noMatchesValue, Font.regularSystemFont(12), Color.white(), null, 1, false);
       noDataStack.addSpacer();
       leagueStack.addSpacer();
   }
