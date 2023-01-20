@@ -313,11 +313,10 @@ async function addWidgetMatch(matchesStack, match, title) {
                 addFormattedText(matchInfoDetailsStack, detailsCancellationValue, Font.regularSystemFont(12), Color.white(), null, false);
             } else {
                 // If match is in the future show date and time
-                const detailsDateValue = formatDate(new Date((matchDetails.content.matchFacts.infoBox["Match Date"].dateFormatted).replaceAll(".", "")));
-                addFormattedText(matchInfoDetailsStack, detailsDateValue, Font.regularSystemFont(12), Color.white(), null, false);
+                const detailsDateValue = formatDate(new Date((matchDetails.content.matchFacts.infoBox["Match Date"].utcTime)));
+                addFormattedText(matchInfoDetailsStack, detailsDateValue, Font.regularSystemFont(12), Color.gray(), null, false);
                 matchInfoDetailsStack.addSpacer(3);
-                const detailsTimeValue = formatTime(new Date((`${matchDetails.content.matchFacts.infoBox["Match Date"].dateFormatted} ${matchDetails.content.matchFacts.infoBox["Match Date"].timeFormatted}`).replaceAll(".", "")));
-                addFormattedText(matchInfoDetailsStack, detailsTimeValue, Font.regularSystemFont(12), Color.white(), null, false);
+                const detailsTimeValue = formatTime(new Date((`${matchDetails.content.matchFacts.infoBox["Match Date"].utcTime}`)));                addFormattedText(matchInfoDetailsStack, detailsTimeValue, Font.regularSystemFont(12), Color.white(), null, false);
             }
         } else {
             // If match is in the past or ongoing show result
